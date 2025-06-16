@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>JavaScript Obfuscator</title>
+<script src="https://cdn.jsdelivr.net/npm/javascript-obfuscator/dist/index.browser.js"></script>
+<style>
+  body {
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0;
+    padding: 20px;
+    background: #f4f7fa;
+    color: #222;
+  }
+  .container {
+    max-width: 960px;
+    margin: auto;
+    background: #fff;
+    padding: 30px;
+    border-radius: 10px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.1);
+  }
+  h1 {
+    text-align: center;
+    color: #007acc;
+    margin-bottom: 20px;
+  }
+  label {
+    font-weight: 600;
+    display: block;
+    margin-top: 20px;
+    margin-bottom: 8px;
+  }
+  textarea {
+    width: 100%;
+    height: 180px;
+    font-family: monospace;
+    font-size: 14px;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+    resize: vertical;
+  }
+  .btn {
+    padding: 12px 24px;
+    font-size: 16px;
+    background-color: #007acc;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    margin-top: 16px;
+    cursor: pointer;
+    transition: background-color 0.3s;
+  }
+  .btn:hover {
+    background-color: #005fa3;
+  }
+  .btn:disabled {
+    background-color: #aaa;
+    cursor: not-allowed;
+  }
+  #output {
+    margin-top: 32px;
+  }
+  #copyBtn {
+    background-color: #28a745;
+    margin-left: 10px;
+    display: none;
+  }
+  #copyBtn:hover {
+    background-color: #1e7e34;
+  }
+  .note {
+    font-size: 14px;
+    color: #666;
+    margin-top: 10px;
+  }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>🛡️ JavaScript Obfuscator</h1>
+  <p>You can either select a JavaScript (.js) file to obfuscate, or enter/paste JavaScript code in the textarea below.</p>
+
+  <label for="fileInput">Select JavaScript File (.js):</label>
+  <input type="file" id="fileInput" accept=".js" />
+
+  <label for="codeInput">Or enter/paste JavaScript code here:</label>
+  <textarea id="codeInput" placeholder="Type or paste JavaScript code here..."></textarea>
+
+  <button class="btn" id="obfuscateBtn" disabled>🔒 Obfuscate</button>
+
+  <div id="output">
+    <h2>🧪 Obfuscated Code</h2>
+    <textarea id="obfuscatedCode" readonly placeholder="Obfuscated code will appear here..."></textarea>
+    <br>
+    <button class="btn" id="copyBtn">📋 Copy to Clipboard</button>
+    <p class="note">The obfuscated result can now be copied or used directly in your project.</p>
+  </div>
+</div>
+
+<script>
+  const fileInput = document.getElementById('fileInput');
+  const codeInput = document.getElementById('codeInput');
+  const obfuscateBtn = document.getElementById('obfuscateBtn');
+  const obfuscatedCodeArea = document.getElementById('obfuscatedCode');
+  const copyBtn = document.getElementById('copyBtn');
+
+  let fileContent = '';
+
+  function updateObfuscateButtonState() {
+    obfuscateBtn.disabled = !(fileContent.trim() || codeInput.value.trim());
+  }
+
+  fileInput.addEventListener('change', () => {
+    const file = fileInput.files[0];
+    codeInput.value = '';
+    obfuscatedCodeArea.value = '';
+    copyBtn.style.display = 'none';
+    fileContent = '';
+
+    if (!file) {
+      obfuscateBtn.disabled = true;
+      return;
+    }
+
+    if (!file.name.endsWith('.js')) {
+      alert('Please select a valid JavaScript (.js) file.');
+      fileInput.value = '';
+      obfuscateBtn.disabled = true;
+      return;
+    }
+
+    const reader = new FileReader();
+    reader.onload = e => {
+      fileContent = e.target.result;
+      updateObfuscateButtonState();
+    };
+    reader.readAsText(file);
+  });
+
+  codeInput.addEventListener('input', () => {
+    fileInput.value = '';
+    fileContent = '';
+    obfuscatedCodeArea.value = '';
+    copyBtn.style.display = 'none';
+    updateObfuscateButtonState();
+  });
+
+  obfuscateBtn.addEventListener('click', () => {
+    let codeToObfuscate = fileContent.trim() || codeInput.value.trim();
+    if (!codeToObfuscate) {
+      alert('Please provide JavaScript code.');
+      return;
+    }
+
+    try {
+      const result = JavaScriptObfuscator.obfuscate(codeToObfuscate, {
+        compact: true,
+        controlFlowFlattening: true,
+        deadCodeInjection: true,
+        debugProtection: true,
+        disableConsoleOutput: true,
+        stringArrayEncoding: ['rc4'],
+        rotateStringArray: true,
+        selfDefending: true,
+        transformObjectKeys: true,
+        unicodeEscapeSequence: false
+      });
+      obfuscatedCodeArea.value = result.getObfuscatedCode();
+      copyBtn.style.display = 'inline-block';
+    } catch (err) {
+      alert('Obfuscation error: ' + err.message);
+    }
+  });
+
+  copyBtn.addEventListener('click', () => {
+    navigator.clipboard.writeText(obfuscatedCodeArea.value)
+      .then(() => {
+        copyBtn.textContent = '✅ Copied!';
+        setTimeout(() => {
+          copyBtn.textContent = '📋 Copy to Clipboard';
+        }, 2000);
+      })
+      .catch(() => {
+        alert('Failed to copy to clipboard.');
+      });
+  });
+</script>
+</body>
+</html>
